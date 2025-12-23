@@ -9,26 +9,29 @@
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:system-ui,-apple-system;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background:#0b1220;
   color:#e5e7eb;
 }
 header{
-  padding:14px;
+  padding:16px;
   text-align:center;
-  font-size:18px;
-  font-weight:600;
+  font-size:20px;
+  font-weight:bold;
   background:#020617;
-  box-shadow:0 2px 8px rgba(0,0,0,.5);
+  box-shadow:0 4px 10px rgba(0,0,0,.5);
+  border-bottom: 2px solid #38bdf8;
 }
 .container{
-  padding:14px;
+  padding:20px;
+  max-width: 500px;
+  margin: auto;
 }
 label{
   display:block;
-  margin:10px 0 6px;
+  margin:15px 0 6px;
   font-size:14px;
-  opacity:.85;
+  color: #38bdf8;
 }
 input,textarea,select{
   width:100%;
@@ -37,14 +40,15 @@ input,textarea,select{
   border:1px solid #1e293b;
   background:#020617;
   color:#e5e7eb;
-  font-size:14px;
+  font-size:15px;
+  outline: none;
 }
-textarea{min-height:120px;resize:vertical}
+textarea{min-height:120px; resize:none}
 
 .buttons{
   display:flex;
   gap:10px;
-  margin-top:14px;
+  margin-top:20px;
 }
 button{
   flex:1;
@@ -54,103 +58,186 @@ button{
   background:transparent;
   color:#38bdf8;
   font-size:15px;
-  font-weight:600;
-  transition:.2s;
+  font-weight:bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 button.primary{
   background:#38bdf8;
   color:#020617;
 }
-button:active{transform:scale(.96)}
+button:disabled{
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Timer and Loading Style */
+#status-area {
+  margin-top: 20px;
+  text-align: center;
+  display: none; /* शुरू में छुपा हुआ */
+}
+.timer-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+.loading-msg {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #94a3b8;
+}
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 4px solid #1e293b;
+  border-top: 4px solid #38bdf8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 audio{
   width:100%;
-  margin-top:14px;
+  margin-top:20px;
+  border-radius: 10px;
 }
-
 .footer{
   text-align:center;
-  padding:10px;
+  padding:30px;
   font-size:12px;
-  opacity:.6;
+  opacity:0.5;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-🎙️ Hindi / Urdu Realistic TTS (Non-Google)
-</header>
+<header>🎙️ Hindi TTS Studio</header>
 
 <div class="container">
 
-<label>LIVE API URL</label>
-<input value="https://hindi-tts-3gjy.onrender.com" readonly>
+<label>API STATUS</label>
+<input id="api-url" value="https://hindi-tts-3gjy.onrender.com" readonly style="font-size:12px; opacity:0.7;">
 
-<label>Voice Select</label>
+<label>Select Voice</label>
 <select id="voice">
-  <option value="hi-male">Hindi – Male</option>
-  <option value="hi-female">Hindi – Female</option>
-  <option value="ur-male">Urdu – Male (Islamic)</option>
+  <option value="hi-male">Hindi – Male (Strong)</option>
+  <option value="hi-female">Hindi – Female (Soft)</option>
+  <option value="ur-male">Urdu – Male (Poetic)</option>
 </select>
 
-<label>Text (Hindi / Urdu)</label>
-<textarea id="text" placeholder="यहाँ टेक्स्ट लिखें या पेस्ट करें…"></textarea>
+<label>Enter Text</label>
+<textarea id="text" placeholder="यहाँ टेक्स्ट लिखें...">नमस्ते, आपका स्वागत है। सर्वर को जागने में थोड़ा समय लग सकता है।</textarea>
 
 <div class="buttons">
-  <button class="primary" onclick="generate()">▶ Generate</button>
+  <button class="primary" id="genBtn" onclick="generate()">▶ Generate Audio</button>
   <button onclick="stopAudio()">⏹ Stop</button>
-  <button onclick="download()">⬇ Download</button>
+</div>
+
+<!-- Timer and Loading Section -->
+<div id="status-area">
+    <div class="spinner"></div>
+    <div class="timer-text" id="timer">00:00</div>
+    <div class="loading-msg" id="msg">सर्वर को जगाया जा रहा है (Startup)...</div>
 </div>
 
 <audio id="player" controls></audio>
 
+<div style="margin-top:15px">
+    <button onclick="download()" style="width:100%">⬇ Download MP3/WAV</button>
+</div>
+
 </div>
 
 <div class="footer">
-Powered by Piper TTS • GitHub Pages Ready • APK Compatible
+Build with Piper TTS • Render Cloud • No Google API
 </div>
 
 <script>
-const API_URL = "https://hindi-tts-3gjy.onrender.com/tts";
 let audioBlob = null;
-let audio = document.getElementById("player");
+let audioPlayer = document.getElementById("player");
+let genBtn = document.getElementById("genBtn");
+let statusArea = document.getElementById("status-area");
+let timerDisplay = document.getElementById("timer");
+let msgDisplay = document.getElementById("msg");
+
+let seconds = 0;
+let timerInterval = null;
+
+function startTimer() {
+    seconds = 0;
+    statusArea.style.display = "block";
+    timerInterval = setInterval(() => {
+        seconds++;
+        let mins = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        timerDisplay.innerText = 
+            (mins < 10 ? "0" + mins : mins) + ":" + 
+            (secs < 10 ? "0" + secs : secs);
+        
+        if(seconds > 20) {
+            msgDisplay.innerText = "सर्वर लोड हो रहा है, थोड़ा इंतज़ार करें...";
+        }
+        if(seconds > 45) {
+            msgDisplay.innerText = "बस कुछ ही पल और, ऑडियो बन रहा है...";
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+}
 
 async function generate(){
   const text = document.getElementById("text").value.trim();
-  if(!text){ alert("Text empty hai"); return; }
+  const voice = document.getElementById("voice").value;
+  const API_URL = document.getElementById("api-url").value + "/tts";
+
+  if(!text){ alert("Please enter text"); return; }
+
+  // UI Reset
+  genBtn.disabled = true;
+  audioPlayer.src = "";
+  startTimer();
 
   try{
-    const res = await fetch(API_URL,{
+    const res = await fetch(API_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        text:text,
-        voice:document.getElementById("voice").value
-      })
+      body:JSON.stringify({ text: text, voice: voice })
     });
 
-    if(!res.ok) throw new Error("Server error");
+    if(!res.ok) throw new Error("Server Error");
 
     audioBlob = await res.blob();
-    audio.src = URL.createObjectURL(audioBlob);
-    audio.play();
-  }catch(e){
-    alert("Server sleep me hai, 10–20 sec baad try karein");
+    const url = URL.createObjectURL(audioBlob);
+    audioPlayer.src = url;
+    audioPlayer.play();
+    
+    msgDisplay.innerText = "सफलता! ऑडियो तैयार है।";
+    setTimeout(() => { statusArea.style.display = "none"; }, 3000);
+
+  } catch(e) {
+    alert("Error: सर्वर बहुत देर से रिस्पोंड नहीं कर रहा। कृपया पेज रिफ्रेश करके फिर कोशिश करें।");
+    statusArea.style.display = "none";
+  } finally {
+    stopTimer();
+    genBtn.disabled = false;
   }
 }
 
 function stopAudio(){
-  audio.pause();
-  audio.currentTime = 0;
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
 }
 
 function download(){
-  if(!audioBlob){ alert("Audio generate nahi hua"); return; }
+  if(!audioBlob){ alert("Pehle audio generate karein"); return; }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(audioBlob);
-  a.download = "tts.wav";
+  a.download = "hindi_speech.wav";
   a.click();
 }
 </script>
