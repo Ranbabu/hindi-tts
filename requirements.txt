@@ -1,6 +1,3 @@
-torch
-torchaudio
-soundfile
 fastapi
 uvicorn
-fairseq
+piper-tts
