@@ -1,42 +1,40 @@
 #!/usr/bin/env bash
 
-echo "----------- STARTING SETUP -----------"
+echo "----------- STARTING FRESH SETUP -----------"
 
-# 1. PIPER सेटअप (अगर मौजूद नहीं है)
-if [ ! -f "./piper/piper" ]; then
-    echo "Piper missing. Downloading Linux version..."
-    # Piper का Linux वर्ज़न डाउनलोड करें
-    wget -O piper.tar.gz https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
-    
-    echo "Extracting Piper..."
-    tar -xvf piper.tar.gz
-    rm piper.tar.gz
-else
-    echo "Piper is already installed."
-fi
+# 1. पुरानी खराब फाइल्स को साफ़ करें (ताकि Error न आए)
+echo "Cleaning up old corrupted files..."
+rm -rf models
+rm -rf piper
 
-# 2. MODELS सेटअप
+# 2. PIPER डाउनलोड करें
+echo "Downloading Piper..."
+wget -O piper.tar.gz https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
+tar -xvf piper.tar.gz
+rm piper.tar.gz
+
+# 3. MODELS डाउनलोड करें (Curl का उपयोग करेंगे जो ज्यादा सुरक्षित है)
+echo "Downloading Hindi Models..."
 mkdir -p models
 
-# (A) Hindi Male Model (Pratham)
-if [ ! -f "./models/hi-male.onnx" ]; then
-    echo "Downloading Hindi Male Model..."
-    wget -O models/hi-male.onnx https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/hi/hi_IN/pratham/hgh/hi_IN-pratham-hgh.onnx
-    wget -O models/hi-male.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/hi/hi_IN/pratham/hgh/hi_IN-pratham-hgh.onnx.json
-fi
+# (A) Hindi Male
+echo "Downloading Male Voice..."
+curl -L -o models/hi-male.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/hgh/hi_IN-pratham-hgh.onnx"
+curl -L -o models/hi-male.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/hgh/hi_IN-pratham-hgh.onnx.json"
 
-# (B) Hindi Female Model (Alma)
-if [ ! -f "./models/hi-female.onnx" ]; then
-    echo "Downloading Hindi Female Model..."
-    wget -O models/hi-female.onnx https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/hi/hi_IN/alma/medium/hi_IN-alma-medium.onnx
-    wget -O models/hi-female.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/hi/hi_IN/alma/medium/hi_IN-alma-medium.onnx.json
-fi
+# (B) Hindi Female
+echo "Downloading Female Voice..."
+curl -L -o models/hi-female.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/alma/medium/hi_IN-alma-medium.onnx"
+curl -L -o models/hi-female.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/alma/medium/hi_IN-alma-medium.onnx.json"
 
-echo "All Models Ready."
-
-# 3. Permissions देना
+# 4. Permissions सेट करें
 chmod +x ./piper/piper
 
-# 4. सर्वर स्टार्ट करना
-echo "Starting FastAPI Server..."
+# 5. चेक करें कि फाइल्स सही से डाउनलोड हुई या नहीं
+if [ ! -s "models/hi-male.onnx.json" ]; then
+  echo "ERROR: Model JSON file is empty! Download failed."
+  exit 1
+fi
+
+echo "Setup Complete. Starting Server..."
 uvicorn app:app --host 0.0.0.0 --port $PORT
