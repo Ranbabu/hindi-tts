@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindi / Urdu Realistic TTS</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#0b1220;
+  color:#e5e7eb;
+}
+header{
+  padding:14px;
+  text-align:center;
+  font-size:18px;
+  font-weight:600;
+  background:#020617;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
+}
+.container{
+  padding:14px;
+}
+label{
+  display:block;
+  margin:10px 0 6px;
+  font-size:14px;
+  opacity:.85;
+}
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #1e293b;
+  background:#020617;
+  color:#e5e7eb;
+  font-size:14px;
+}
+textarea{min-height:120px;resize:vertical}
+
+.buttons{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+button{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #38bdf8;
+  background:transparent;
+  color:#38bdf8;
+  font-size:15px;
+  font-weight:600;
+  transition:.2s;
+}
+button.primary{
+  background:#38bdf8;
+  color:#020617;
+}
+button:active{transform:scale(.96)}
+
+audio{
+  width:100%;
+  margin-top:14px;
+}
+
+.footer{
+  text-align:center;
+  padding:10px;
+  font-size:12px;
+  opacity:.6;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🎙️ Hindi / Urdu Realistic TTS (Non-Google)
+</header>
+
+<div class="container">
+
+<label>LIVE API URL</label>
+<input value="https://hindi-tts-3gjy.onrender.com/tts" readonly>
+
+<label>Voice Select</label>
+<select id="voice">
+  <option value="hi-male">Hindi – Male</option>
+  <option value="hi-female">Hindi – Female</option>
+  <option value="ur-male">Urdu – Male (Islamic)</option>
+</select>
+
+<label>Text (Hindi / Urdu)</label>
+<textarea id="text" placeholder="यहाँ टेक्स्ट लिखें या पेस्ट करें…"></textarea>
+
+<div class="buttons">
+  <button class="primary" onclick="generate()">▶ Generate</button>
+  <button onclick="stopAudio()">⏹ Stop</button>
+  <button onclick="download()">⬇ Download</button>
+</div>
+
+<audio id="player" controls></audio>
+
+</div>
+
+<div class="footer">
+Powered by Piper TTS • GitHub Pages Ready • APK Compatible
+</div>
+
+<script>
+const API_URL = "https://hindi-tts-3gjy.onrender.com/tts";
+let audioBlob = null;
+let audio = document.getElementById("player");
+
+async function generate(){
+  const text = document.getElementById("text").value.trim();
+  if(!text){ alert("Text empty hai"); return; }
+
+  try{
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        text:text,
+        voice:document.getElementById("voice").value
+      })
+    });
+
+    if(!res.ok) throw new Error("Server error");
+
+    audioBlob = await res.blob();
+    audio.src = URL.createObjectURL(audioBlob);
+    audio.play();
+  }catch(e){
+    alert("Server sleep me hai, 10–20 sec baad try karein");
+  }
+}
+
+function stopAudio(){
+  audio.pause();
+  audio.currentTime = 0;
+}
+
+function download(){
+  if(!audioBlob){ alert("Audio generate nahi hua"); return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(audioBlob);
+  a.download = "tts.wav";
+  a.click();
+}
+</script>
+
+</body>
+</html>
