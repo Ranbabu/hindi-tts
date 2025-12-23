@@ -3,37 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hindi / Urdu Super TTS</title>
+<title>Pro Hindi/Urdu TTS Studio</title>
 <style>
-/* Same CSS as before */
-*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}header{padding:15px;text-align:center;font-size:1.2rem;font-weight:700;background:#1e293b;border-bottom:2px solid #38bdf8}.container{padding:20px;max-width:500px;margin:0 auto;flex:1}label{display:block;margin:15px 0 5px;color:#38bdf8;font-size:.9rem}input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#fff;outline:0}textarea{min-height:100px;resize:vertical}.buttons{display:flex;gap:10px;margin-top:20px}button{flex:1;padding:14px;border-radius:8px;border:none;font-size:1rem;font-weight:600;cursor:pointer}button.primary{background:#0ea5e9;color:#fff}button.secondary{background:#334155;color:#cbd5e1}#status-box{margin-top:15px;padding:10px;background:#334155;border-radius:6px;text-align:center;font-size:.9rem;display:none;color:#ffd700}audio{width:100%;margin-top:20px;display:none}.download-btn{background:#22c55e;color:#fff;width:100%;margin-top:15px;padding:12px;border:none;border-radius:8px;font-size:1rem;cursor:pointer;display:none}
+:root { --primary: #0ea5e9; --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --border: #334155; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+header { padding: 18px; text-align: center; font-size: 1.4rem; font-weight: 700; background: #020617; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.3); letter-spacing: 1px; }
+.container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; }
+label { display: block; margin: 15px 0 8px; color: var(--primary); font-size: 0.95rem; font-weight: 600; }
+select, textarea, input[type="text"] { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 1rem; outline: none; transition: 0.3s; }
+select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+textarea { min-height: 180px; resize: vertical; line-height: 1.6; }
+.slider-group { display: flex; gap: 20px; margin-top: 15px; }
+.slider-box { flex: 1; background: var(--card); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+.slider-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; display: flex; justify-content: space-between; }
+input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+.buttons { display: flex; gap: 12px; margin-top: 25px; }
+button { flex: 1; padding: 16px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, opacity 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+button.primary { background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.4); }
+button.secondary { background: var(--card); color: #cbd5e1; border: 1px solid var(--border); }
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+#status-box { margin-top: 20px; padding: 12px; background: #334155; border-radius: 8px; text-align: center; font-size: 0.9rem; display: none; }
+audio { width: 100%; margin-top: 25px; display: none; border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.download-btn { background: #22c55e; color: white; width: 100%; margin-top: 15px; padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; display: none; }
+.char-count { text-align: right; font-size: 0.8rem; color: #64748b; margin-top: 5px; }
 </style>
 </head>
 <body>
 
-<header>🎙️ Hindi AI Voice (HQ)</header>
+<header>🎙️ Hindi/Urdu AI Studio</header>
 
 <div class="container">
-<label>API URL</label>
-<input id="api-url" value="https://hindi-tts-3gjy.onrender.com" readonly style="opacity:0.6">
 
-<label>आवाज़ चुनें (Select Voice)</label>
+<label>API URL (Auto-Detected)</label>
+<input id="api-url" value="https://hindi-tts-3gjy.onrender.com" readonly style="opacity:0.6; font-size:0.8rem; padding:10px;">
+
+<label>🗣️ आवाज़ चुनें (Select Voice)</label>
 <select id="voice">
-  <option value="hi-male">Hindi – Male (Madhur)</option>
-  <option value="hi-female">Hindi – Female (Swara)</option>
-  <option value="ur-male">Urdu – Male (Salman)</option>
-  <option value="ur-female">Urdu – Female (Gulshan)</option>
+  <optgroup label="🇮🇳 HINDI (India)">
+    <option value="hi-male" selected>Male 1: Madhur (Professional/Heavy)</option>
+    <option value="hi-female">Female 1: Swara (News Anchor/Standard)</option>
+    <option value="hi-female-2">Female 2: Noopur (Fast/Sharp Tone)</option>
+  </optgroup>
+  
+  <optgroup label="🇵🇰 URDU (Pakistan)">
+    <option value="ur-pk-male">Male: Asad (Best for Poetry/Heavy)</option>
+    <option value="ur-pk-female">Female: Uzma (Storytelling/Soft)</option>
+  </optgroup>
+
+  <optgroup label="🇮🇳 URDU (India)">
+    <option value="ur-male">Male: Salman (Casual Conversation)</option>
+    <option value="ur-female">Female: Gulshan (Indian Shayari Style)</option>
+  </optgroup>
 </select>
 
-<label>टेक्स्ट लिखें</label>
-<textarea id="text" placeholder="यहाँ लिखें... (Example: नमस्ते, यह आर्टिफिशियल इंटेलिजेंस की आवाज़ है।)">नमस्ते, यह एक बेहतरीन नई तकनीक है।</textarea>
+<!-- Slider Controls -->
+<div class="slider-group">
+    <div class="slider-box">
+        <div class="slider-label"><span>Speed (गति)</span> <span id="rate-val">Normal</span></div>
+        <input type="range" id="rate" min="-50" max="50" value="0" oninput="updateLabels()">
+    </div>
+    <div class="slider-box">
+        <div class="slider-label"><span>Pitch (आवाज़)</span> <span id="pitch-val">Normal</span></div>
+        <input type="range" id="pitch" min="-20" max="20" value="0" oninput="updateLabels()">
+    </div>
+</div>
+
+<label>📝 टेक्स्ट लिखें (Hindi / Urdu)</label>
+<textarea id="text" placeholder="यहाँ टेक्स्ट लिखें... 
+(Max Limit: 2500 Characters)" oninput="updateCount()"></textarea>
+<div class="char-count" id="char-count">0 / 2500</div>
 
 <div class="buttons">
-  <button class="primary" id="genBtn" onclick="generate()">▶ Generate</button>
-  <button class="secondary" onclick="stopAudio()">Stop</button>
+    <button class="primary" id="genBtn" onclick="generate()">▶ Generate</button>
+    <button class="secondary" onclick="stopAudio()">⏹ Stop</button>
 </div>
 
 <div id="status-box">Processing...</div>
+
 <audio id="player" controls></audio>
 <button id="dlBtn" class="download-btn" onclick="download()">⬇ Download MP3</button>
 
@@ -46,19 +94,41 @@ const genBtn = document.getElementById("genBtn");
 const statusBox = document.getElementById("status-box");
 const dlBtn = document.getElementById("dlBtn");
 
+function updateCount() {
+    const len = document.getElementById("text").value.length;
+    document.getElementById("char-count").innerText = len + " / 2500";
+    if(len > 2500) document.getElementById("char-count").style.color = "#ef4444";
+    else document.getElementById("char-count").style.color = "#64748b";
+}
+
+function updateLabels() {
+    const r = document.getElementById("rate").value;
+    const p = document.getElementById("pitch").value;
+    document.getElementById("rate-val").innerText = r == 0 ? "Normal" : (r > 0 ? "+" + r + "%" : r + "%");
+    document.getElementById("pitch-val").innerText = p == 0 ? "Normal" : (p > 0 ? "+" + p + "Hz" : p + "Hz");
+}
+
 async function generate(){
   const text = document.getElementById("text").value.trim();
   const voice = document.getElementById("voice").value;
+  const rate = document.getElementById("rate").value;
+  const pitch = document.getElementById("pitch").value;
+  
   const baseUrl = document.getElementById("api-url").value.replace(/\/$/, "");
   const API_URL = baseUrl + "/tts";
 
-  if(!text){ alert("Text required!"); return; }
+  if(!text){ alert("कृपया कुछ टेक्स्ट लिखें!"); return; }
+  if(text.length > 5000){ alert("टेक्स्ट बहुत लंबा है, कृपया छोटा करें।"); return; }
 
   genBtn.disabled = true;
   genBtn.innerText = "Generating...";
+  genBtn.style.opacity = "0.7";
+  
   statusBox.style.display = "block";
-  statusBox.innerText = "Connecting to cloud...";
+  statusBox.innerText = "☁️ Creating Audio...";
   statusBox.style.color = "#ffd700";
+  statusBox.style.background = "#334155";
+  
   audioPlayer.style.display = "none";
   dlBtn.style.display = "none";
 
@@ -66,7 +136,7 @@ async function generate(){
     const res = await fetch(API_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ text: text, voice: voice })
+      body:JSON.stringify({ text, voice, rate, pitch })
     });
 
     if(!res.ok) {
@@ -85,11 +155,13 @@ async function generate(){
     try { await audioPlayer.play(); } catch(e){}
 
   } catch(e) {
-    statusBox.innerText = "Error: " + e.message;
+    statusBox.innerText = "❌ Error: " + e.message;
     statusBox.style.color = "#ff4d4d";
+    statusBox.style.background = "#450a0a";
   } finally {
     genBtn.disabled = false;
     genBtn.innerText = "▶ Generate";
+    genBtn.style.opacity = "1";
   }
 }
 
@@ -102,11 +174,12 @@ function download(){
   if(!audioBlob) return;
   const a = document.createElement("a");
   a.href = URL.createObjectURL(audioBlob);
-  a.download = "ai-voice.mp3";
+  a.download = "hindi-urdu-tts.mp3";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
 </script>
+
 </body>
 </html>
