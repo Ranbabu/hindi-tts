@@ -14,23 +14,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- COMPLETE VOICE LIST (All Available Options) ---
+# --- COMPLETE ALL VOICE LIST ---
 VOICES = {
-    # --- Hindi Voices (India) ---
-    "hi-male": "hi-IN-MadhurNeural",       # Male (Deep/Professional)
-    "hi-female": "hi-IN-SwaraNeural",      # Female (Standard News/Office)
-    "hi-female-2": "hi-IN-NoopurNeural",   # Female (Fast/Sharp)
+    # --- Hindi (India) ---
+    "hi-male": "hi-IN-MadhurNeural",       # Best Male
+    "hi-female": "hi-IN-SwaraNeural",      # Best Female
+    "hi-female-2": "hi-IN-NoopurNeural",   # Female (Sharp Tone - often works)
 
-    # --- Urdu Voices (India & Pakistan) ---
+    # --- Urdu (Pakistan) ---
+    "ur-pk-male": "ur-PK-AsadNeural",      # Best Urdu Male
+    "ur-pk-female": "ur-PK-UzmaNeural",    # Best Urdu Female
+
+    # --- Urdu (India) ---
     "ur-male": "ur-IN-SalmanNeural",       # Indian Urdu Male
-    "ur-female": "ur-IN-GulshanNeural",    # Indian Urdu Female (New Added)
-    "ur-pk-male": "ur-PK-AsadNeural",      # Pakistani Urdu Male (Heavy/Poetic)
-    "ur-pk-female": "ur-PK-UzmaNeural"     # Pakistani Urdu Female (Soft Story)
+    "ur-female": "ur-IN-GulshanNeural",    # Indian Urdu Female (Can be unstable)
+
+    # --- Indian English (For Hinglish) ---
+    "en-in-female": "en-IN-NeerjaNeural",
+    "en-in-male": "en-IN-PrabhatNeural"
 }
 
 @app.get("/")
 def root():
-    return {"status": "running", "engine": "Microsoft Edge TTS (Max Models)"}
+    return {"status": "running", "engine": "Edge TTS (All Models Unlocked)"}
 
 @app.post("/tts")
 async def tts(data: dict):
@@ -43,9 +49,10 @@ async def tts(data: dict):
     if not text:
         raise HTTPException(status_code=400, detail="Text required")
 
-    # Default Voice
+    # Select Voice (Default to Madhur if key invalid)
     voice = VOICES.get(voice_key, "hi-IN-MadhurNeural")
     
+    # Parameters
     rate_str = f"{speed_val:+d}%"
     pitch_str = f"{pitch_val:+d}Hz"
 
@@ -56,7 +63,7 @@ async def tts(data: dict):
         await communicate.save(out_file)
         
         if not os.path.exists(out_file):
-            raise HTTPException(status_code=500, detail="Audio generation failed")
+            raise HTTPException(status_code=500, detail="Error: Audio file not created.")
 
         return FileResponse(out_file, media_type="audio/mpeg", filename="audio.mp3")
 
