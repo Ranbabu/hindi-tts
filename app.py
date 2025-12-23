@@ -1,10 +1,9 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import subprocess
 import uuid
 import os
-import shutil
 
 app = FastAPI(title="Hindi TTS API", version="1.0")
 
@@ -15,35 +14,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# रास्ते (Paths) सेट करना
+# Paths Setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PIPER_BIN = os.path.join(BASE_DIR, "piper", "piper")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 
-# फाइल डिलीट करने का फंक्शन (Cleanup)
 def remove_file(path: str):
     try:
         if os.path.exists(path):
             os.remove(path)
-    except Exception as e:
-        print(f"Error deleting file: {e}")
+    except:
+        pass
 
-# वॉयस मैपिंग (Frontend से जो नाम आएगा, उसे सही फाइल से जोड़ना)
+# Voice Mapping
 VOICE_MAP = {
     "hi-male": "hi-male.onnx",
-    "ur-male": "hi-male.onnx",   # उर्दू के लिए भी हिंदी मेल मॉडल (फिलहाल)
+    "ur-male": "hi-male.onnx",
     "hi-female": "hi-female.onnx"
 }
 DEFAULT_MODEL = "hi-male.onnx"
 
 @app.get("/")
 def root():
-    # चेक करें कि Piper डाउनलोड हुआ या नहीं
-    piper_status = "Installed" if os.path.exists(PIPER_BIN) else "Missing (Check Logs)"
     return {
         "status": "running", 
         "engine": "Piper TTS", 
-        "piper_binary": piper_status
+        "piper_path": PIPER_BIN,
+        "piper_exists": os.path.exists(PIPER_BIN)
     }
 
 @app.post("/tts")
@@ -52,24 +49,26 @@ async def tts(data: dict, background_tasks: BackgroundTasks):
     voice_type = data.get("voice", "hi-male")
 
     if not text:
-        return {"error": "Text required"}
+        raise HTTPException(status_code=400, detail="Text is empty")
 
-    # सही मॉडल फाइल चुनें
+    # Model Selection
     model_filename = VOICE_MAP.get(voice_type, DEFAULT_MODEL)
     model_path = os.path.join(MODELS_DIR, model_filename)
     config_path = f"{model_path}.json"
 
-    # अगर स्पेसिफिक मॉडल नहीं मिला, तो जो भी मौजूद है उसे यूज़ करें (Crash से बचने के लिए)
+    # Check if files exist
+    if not os.path.exists(PIPER_BIN):
+        raise HTTPException(status_code=500, detail="Server Error: Piper binary missing. Check start.sh logs.")
+    
     if not os.path.exists(model_path):
-        print(f"Requested model {model_filename} not found, checking fallback...")
-        fallback_path = os.path.join(MODELS_DIR, DEFAULT_MODEL)
-        if os.path.exists(fallback_path):
-            model_path = fallback_path
+        # Fallback to whatever model is available
+        available_models = [f for f in os.listdir(MODELS_DIR) if f.endswith(".onnx")]
+        if available_models:
+            model_path = os.path.join(MODELS_DIR, available_models[0])
             config_path = f"{model_path}.json"
         else:
-            return {"error": "Server is still downloading models. Please wait 1 minute and try again."}
+            raise HTTPException(status_code=500, detail="Server Error: No models found. Still downloading?")
 
-    # आउटपुट फाइल का नाम
     out_file = f"/tmp/{uuid.uuid4()}.wav"
 
     cmd = [
@@ -80,7 +79,7 @@ async def tts(data: dict, background_tasks: BackgroundTasks):
     ]
 
     try:
-        # Piper कमांड रन करें
+        # Run Piper
         process = subprocess.run(
             cmd,
             input=text.encode("utf-8"),
@@ -89,11 +88,17 @@ async def tts(data: dict, background_tasks: BackgroundTasks):
         )
 
         if process.returncode != 0:
-            return {"error": f"Piper Error: {process.stderr.decode()}"}
+            error_msg = process.stderr.decode()
+            print(f"Piper Error: {error_msg}")
+            raise HTTPException(status_code=500, detail=f"Piper Failed: {error_msg}")
 
-        # बैकग्राउंड में फाइल डिलीट करने का टास्क सेट करें और फाइल भेजें
+        if not os.path.exists(out_file) or os.path.getsize(out_file) == 0:
+             raise HTTPException(status_code=500, detail="Audio file was not created or is empty.")
+
         background_tasks.add_task(remove_file, out_file)
         return FileResponse(path=out_file, media_type="audio/wav")
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
