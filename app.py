@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-import torch, soundfile as sf, os, tarfile, urllib.request
-from fairseq.checkpoint_utils import load_model_ensemble_and_task
+from piper import PiperVoice
+import uuid
+import os
 
-app = FastAPI()
+app = FastAPI(title="Hindi Realistic TTS API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,31 +14,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_DIR = "model"
-MODEL_PT = "model/hin/model.pt"
-MODEL_URL = "https://dl.fbaipublicfiles.com/mms/tts/hin.tar.gz"
+VOICE_MODEL = "hi-IN-libritts-high.onnx"
 
-def prepare_model():
-    if not os.path.exists(MODEL_PT):
-        os.makedirs("model", exist_ok=True)
-        urllib.request.urlretrieve(MODEL_URL, "hin.tar.gz")
-        with tarfile.open("hin.tar.gz") as tar:
-            tar.extractall("model")
-
-prepare_model()
-
-models, cfg, task = load_model_ensemble_and_task([MODEL_PT])
-model = models[0]
-model.eval()
+# Load Piper Hindi voice
+voice = PiperVoice.load(VOICE_MODEL)
 
 @app.post("/tts")
 def tts(data: dict):
-    text = data.get("text", "")
-    if not text.strip():
-        return {"error": "No text"}
+    text = data.get("text", "").strip()
 
-    with torch.no_grad():
-        wav = model.infer(text, sample_rate=16000)
+    if not text:
+        return {"error": "Text is required"}
 
-    sf.write("output.wav", wav, 16000)
-    return FileResponse("output.wav", media_type="audio/wav")
+    out_file = f"/tmp/{uuid.uuid4()}.wav"
+
+    with open(out_file, "wb") as f:
+        voice.synthesize(text, f)
+
+    return FileResponse(
+        out_file,
+        media_type="audio/wav",
+        filename="speech.wav"
+    )
+
+@app.get("/")
+def home():
+    return {"status": "running", "engine": "Piper Hindi TTS"}
