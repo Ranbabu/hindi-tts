@@ -2,287 +2,464 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>All Hindi/Urdu Voices TTS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pro Multi-Voice Studio</title>
 <!-- Google Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
-:root { --primary: #0ea5e9; --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --border: #334155; }
-* { box-sizing: border-box; }
-body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+:root { 
+    --primary: #0ea5e9; 
+    --primary-dark: #0284c7;
+    --accent: #f59e0b;
+    --bg: #0f172a; 
+    --card-bg: #1e293b; 
+    --text: #f1f5f9; 
+    --text-muted: #94a3b8;
+    --border: #334155; 
+    --header-h: 60px;
+    --footer-h: 70px;
+}
 
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { 
+    margin: 0; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column;
+    overflow: hidden; 
+}
+
+/* --- Fixed Header --- */
 header {
-    padding: 16px; text-align: center; font-size: 1.3rem; font-weight: 700;
-    background: #020617; border-bottom: 2px solid var(--primary);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); letter-spacing: 0.5px;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    height: var(--header-h);
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
 }
 
-.container { padding: 20px; max-width: 650px; margin: 0 auto; width: 100%; flex: 1; }
+/* --- Scrollable Content Area --- */
+.main-content {
+    margin-top: var(--header-h);
+    margin-bottom: var(--footer-h);
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    scroll-behavior: smooth;
+    padding-bottom: 30px;
+}
 
-label { display: block; margin: 15px 0 8px; color: var(--primary); font-size: 0.95rem; font-weight: 600; }
+/* --- API Input (Hidden) --- */
+.api-box { display: none; }
 
-/* Voice Selection */
-.voice-row { display: flex; gap: 10px; align-items: center; }
+/* --- Segment Card Design --- */
+.segment-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+.card-title { font-weight: 600; color: var(--primary); font-size: 0.95rem; letter-spacing: 0.5px; }
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; 
+    cursor: pointer; padding: 6px; border-radius: 8px;
+    transition: background 0.2s;
+}
+.btn-delete:active { background: rgba(239, 68, 68, 0.3); }
+
+/* Inputs */
+label.inp-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: 500; }
+
 select {
-    flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--card); color: #fff; font-size: 1rem; outline: none;
+    width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+    background: #0f172a; color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 15px;
+    appearance: none; /* Custom arrow look can be added here */
 }
-.test-btn {
-    padding: 14px; background: #eab308; color: #000; border: none; border-radius: 12px;
-    font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
-}
-.test-btn:active { transform: scale(0.95); }
 
-/* Sliders */
-.slider-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-.reset-btn {
-    background: transparent; border: 1px solid #ef4444; color: #ef4444;
-    padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;
-}
-.slider-group { display: flex; gap: 15px; margin-top: 5px; }
-.slider-box { flex: 1; background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
-.slider-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; display: flex; justify-content: space-between; }
-input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
-
-/* Text Area */
-.text-wrapper { position: relative; margin-top: 5px; }
 textarea {
-    width: 100%; padding: 16px; padding-right: 40px; border-radius: 12px;
-    border: 1px solid var(--border); background: var(--card); color: #fff;
-    font-size: 1.05rem; outline: none; min-height: 200px; resize: vertical; line-height: 1.6;
+    width: 100%; padding: 14px; border-radius: 12px;
+    border: 1px solid var(--border); background: #0f172a; color: #e2e8f0;
+    font-size: 1.05rem; outline: none; min-height: 130px; resize: vertical; line-height: 1.6;
+    margin-bottom: 15px; font-family: inherit;
 }
 textarea:focus { border-color: var(--primary); }
-.clear-icon {
-    position: absolute; top: 12px; right: 12px; color: #64748b; cursor: pointer;
-    background: rgba(30, 41, 59, 0.8); border-radius: 50%; padding: 4px;
+
+/* Sliders */
+.controls-row {
+    display: flex; gap: 12px; margin-bottom: 18px;
 }
-.clear-icon:hover { color: #ef4444; background: #334155; }
-
-.char-count { text-align: right; font-size: 0.8rem; color: #64748b; margin-top: 5px; }
-
-/* Buttons */
-.buttons { display: flex; gap: 12px; margin-top: 25px; }
-button.main-btn {
-    flex: 1; padding: 16px; border-radius: 12px; border: none; font-size: 1rem;
-    font-weight: 700; cursor: pointer; text-transform: uppercase;
-    transition: transform 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
+.control-group {
+    flex: 1; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 10px; border: 1px solid #334155;
 }
-.btn-gen { background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; }
-.btn-stop { background: var(--card); color: #cbd5e1; border: 1px solid var(--border); flex: 0.4; }
-button:active { transform: scale(0.98); }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.control-label {
+    display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;
+}
+input[type=range] { width: 100%; accent-color: var(--primary); height: 4px; cursor: pointer; }
 
-#status-box { margin-top: 20px; padding: 12px; background: #334155; border-radius: 8px; text-align: center; font-size: 0.9rem; display: none; }
-audio { width: 100%; margin-top: 25px; display: none; border-radius: 50px; }
-.download-btn { background: #22c55e; color: white; width: 100%; margin-top: 15px; padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; display: none; }
+/* Action Buttons Area */
+.action-area {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-top: 5px;
+}
+
+/* Main Buttons */
+.btn-gen {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white; border: none; padding: 16px; border-radius: 12px;
+    font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 1.05rem; letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+.btn-gen:active { transform: scale(0.98); }
+
+/* Test Button (Now styled nicely below gen) */
+.btn-test {
+    background: #334155; 
+    color: #fbbf24; /* Amber color for test */
+    border: 1px solid #fbbf24;
+    padding: 12px; border-radius: 12px;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+.btn-test:active { background: #fbbf24; color: #000; }
+
+.audio-wrapper { display: none; margin-top: 15px; background: #020617; padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+audio { width: 100%; height: 40px; border-radius: 20px; }
+
+.btn-download {
+    background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px;
+    font-weight: 700; cursor: pointer; display: none; width: 100%; margin-top: 12px;
+    align-items: center; justify-content: center; gap: 8px; font-size: 1rem;
+}
+
+/* --- Fixed Footer --- */
+footer {
+    height: var(--footer-h);
+    background: #0f172a;
+    border-top: 1px solid var(--border);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+}
+
+.fab-add {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    transition: transform 0.2s;
+}
+.fab-add:active { transform: scale(0.95); }
+
+/* Status Text inside card */
+.status-txt { font-size: 0.85rem; text-align: center; margin: 5px 0; display: none; font-weight: 500; }
+
+/* Spinner */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.animate-spin { animation: spin 1s linear infinite; }
 </style>
 </head>
 <body>
 
+<!-- Header Fixed -->
 <header>
-    <span class="material-icons-round">record_voice_over</span> 
-    All Voice Studio
+    <span class="material-icons-round" style="color:#fbbf24;">graphic_eq</span> 
+    &nbsp;Pro Voice Studio
 </header>
 
-<div class="container">
+<!-- Scrollable Content -->
+<div class="main-content" id="mainContainer">
 
-<label>API URL</label>
-<input id="api-url" value="https://hindi-tts-3gjy.onrender.com" readonly style="opacity:0.6; font-size:0.8rem; padding:10px; border-radius:8px;">
-
-<!-- All Voices Dropdown -->
-<label>🗣️ आवाज़ चुनें (Total 9 Voices)</label>
-<div class="voice-row">
-    <select id="voice">
-        <optgroup label="🇮🇳 Hindi (India)">
-            <option value="hi-male" selected>Male 1: Madhur (Deep/Professional)</option>
-            <option value="hi-female">Female 1: Swara (News/Standard)</option>
-            <option value="hi-female-2">Female 2: Noopur (Sharp/Fast) *Experimental</option>
-        </optgroup>
-        
-        <optgroup label="🇵🇰 Urdu (Pakistan)">
-            <option value="ur-pk-male">Male: Asad (Heavy/Poetic/Ghazal)</option>
-            <option value="ur-pk-female">Female: Uzma (Story/Soft)</option>
-        </optgroup>
-
-        <optgroup label="🇮🇳 Urdu (India)">
-            <option value="ur-male">Male: Salman (Casual Conversation)</option>
-            <option value="ur-female">Female: Gulshan (Indian Shayari) *Experimental</option>
-        </optgroup>
-
-        <optgroup label="🇮🇳 Hinglish (Indian Accent English)">
-            <option value="en-in-female">Female: Neerja (English Accent)</option>
-            <option value="en-in-male">Male: Prabhat (English Accent)</option>
-        </optgroup>
-    </select>
-    <button class="test-btn" onclick="testVoice()" title="Play Sample">
-        <span class="material-icons-round">play_circle</span> Test
-    </button>
-</div>
-
-<!-- Sliders -->
-<div class="slider-header">
-    <label style="margin:0">🎚️ Audio Controls</label>
-    <button class="reset-btn" onclick="resetSliders()">↺ Reset</button>
-</div>
-<div class="slider-group">
-    <div class="slider-box">
-        <div class="slider-label"><span>Speed</span> <span id="rate-val">Normal</span></div>
-        <input type="range" id="rate" min="-50" max="50" value="0" oninput="updateLabels()">
+    <div class="api-box">
+        <input id="global-api-url" value="https://hindi-tts-3gjy.onrender.com" readonly>
     </div>
-    <div class="slider-box">
-        <div class="slider-label"><span>Pitch</span> <span id="pitch-val">Normal</span></div>
-        <input type="range" id="pitch" min="-20" max="20" value="0" oninput="updateLabels()">
+
+    <div id="segments-list"></div>
+    
+    <!-- Empty State -->
+    <div id="empty-state" style="text-align:center; color:#64748b; margin-top:60px; display:none;">
+        <span class="material-icons-round" style="font-size:3.5rem; opacity:0.3;">queue_music</span>
+        <p style="margin-top:10px; font-size:1.1rem;">No scripts added.<br>Tap "+ Add Segment" below.</p>
     </div>
+
 </div>
 
-<!-- Text Area -->
-<label>📝 टेक्स्ट लिखें (Max 4000)</label>
-<div class="text-wrapper">
-    <textarea id="text" placeholder="यहाँ टेक्स्ट लिखें...&#10;For Bhojpuri: Use Hindi Male (Madhur).&#10;For Hinglish: Use Neerja or Prabhat." oninput="updateCount()"></textarea>
-    <span class="material-icons-round clear-icon" onclick="clearText()" title="Clear Text">delete_outline</span>
-</div>
-<div class="char-count" id="char-count">0 / 4000</div>
-
-<!-- Buttons -->
-<div class="buttons">
-    <button class="main-btn btn-gen" id="genBtn" onclick="generate()">
-        <span class="material-icons-round">multitrack_audio</span> Generate
+<!-- Footer Fixed -->
+<footer>
+    <button class="fab-add" onclick="addSegment()">
+        <span class="material-icons-round">add</span> Add New Segment
     </button>
-    <button class="main-btn btn-stop" onclick="stopAudio()">
-        <span class="material-icons-round">stop</span>
-    </button>
-</div>
-
-<div id="status-box">Processing...</div>
-<audio id="player" controls></audio>
-<button id="dlBtn" class="download-btn" onclick="download()">⬇ Download MP3</button>
-
-</div>
+</footer>
 
 <script>
-let audioBlob = null;
-const audioPlayer = document.getElementById("player");
-const genBtn = document.getElementById("genBtn");
-const statusBox = document.getElementById("status-box");
-const dlBtn = document.getElementById("dlBtn");
-const apiInput = document.getElementById("api-url");
+    let segmentCount = 0;
+    const globalApiUrl = document.getElementById("global-api-url");
+    const segmentsList = document.getElementById("segments-list");
+    const emptyState = document.getElementById("empty-state");
 
-function updateCount() {
-    const len = document.getElementById("text").value.length;
-    document.getElementById("char-count").innerText = len + " / 4000";
-    if(len > 4000) document.getElementById("char-count").style.color = "#ef4444";
-    else document.getElementById("char-count").style.color = "#64748b";
-}
+    // Updated Voice List - Added more models (Indian Urdu acts as Hindi Casual)
+    const voiceOptions = `
+        <optgroup label="📺 Hindi News & Documentary (Professional)">
+            <option value="hi-male" selected>🇮🇳 Male: Madhur (Deep Voice/News)</option>
+            <option value="hi-female">🇮🇳 Female: Swara (Standard News Anchor)</option>
+        </optgroup>
 
-function updateLabels() {
-    const r = document.getElementById("rate").value;
-    const p = document.getElementById("pitch").value;
-    document.getElementById("rate-val").innerText = r == 0 ? "Normal" : (r > 0 ? "+" + r + "%" : r + "%");
-    document.getElementById("pitch-val").innerText = p == 0 ? "Normal" : (p > 0 ? "+" + p + "Hz" : p + "Hz");
-}
-
-function resetSliders() {
-    document.getElementById("rate").value = 0;
-    document.getElementById("pitch").value = 0;
-    updateLabels();
-}
-
-function clearText() {
-    if(document.getElementById("text").value && confirm("Clear text?")) {
-        document.getElementById("text").value = "";
-        updateCount();
-    }
-}
-
-async function testVoice() {
-    const voice = document.getElementById("voice").value;
-    let testText = "नमस्ते, यह एक वॉयस टेस्ट है।";
-    if(voice.includes("ur")) testText = "अस्सलाम वालेकुम, यह एक वॉयस टेस्ट है।";
-    if(voice.includes("en")) testText = "Hello, this is a voice test.";
-    
-    await generateAudio(testText, voice, true);
-}
-
-async function generate() {
-    const text = document.getElementById("text").value.trim();
-    const voice = document.getElementById("voice").value;
-    if(!text){ alert("Please enter text!"); return; }
-    if(text.length > 4000){ alert("Limit is 4000 chars!"); return; }
-    
-    await generateAudio(text, voice, false);
-}
-
-async function generateAudio(text, voice, isTest) {
-    const rate = document.getElementById("rate").value;
-    const pitch = document.getElementById("pitch").value;
-    const baseUrl = apiInput.value.replace(/\/$/, "");
-    const API_URL = baseUrl + "/tts";
-
-    if(!isTest) {
-        genBtn.disabled = true;
-        genBtn.innerText = "Working...";
-        statusBox.style.display = "block";
-        statusBox.innerText = "⏳ Generating...";
-        statusBox.style.color = "#ffd700";
-        statusBox.style.background = "#334155";
-        dlBtn.style.display = "none";
-    }
-
-    try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ text, voice, rate, pitch })
-        });
-
-        if(!res.ok) {
-            const err = await res.json();
-            throw new Error(err.detail || err.error || "Failed");
-        }
-
-        audioBlob = await res.blob();
-        const url = URL.createObjectURL(audioBlob);
-        audioPlayer.src = url;
-        audioPlayer.style.display = "block";
+        <optgroup label="🗣️ Hindi/Urdu Casual (Conversational)">
+             <option value="ur-male">🇮🇳 Male: Salman (Casual Hindi Talk)</option>
+             <option value="ur-female">🇮🇳 Female: Gulshan (Soft/Shayari)</option>
+             <option value="hi-female-2">🇮🇳 Female: Noopur (Fast/Sharp)</option>
+        </optgroup>
         
-        if(!isTest) {
-            dlBtn.style.display = "block";
-            statusBox.style.display = "none";
-        }
+        <optgroup label="📖 Urdu/Hindi Storytelling (Heavy/Emotional)">
+            <option value="ur-pk-male">🇵🇰 Male: Asad (Heavy/Poetic/Ghazal)</option>
+            <option value="ur-pk-female">🇵🇰 Female: Uzma (Soft Story)</option>
+        </optgroup>
 
-        try { await audioPlayer.play(); } catch(e){}
+        <optgroup label="🇬🇧 Hinglish (Indian English Accent)">
+            <option value="en-in-female">🇮🇳 Female: Neerja (English Accent)</option>
+            <option value="en-in-male">🇮🇳 Male: Prabhat (English Accent)</option>
+        </optgroup>
+    `;
 
-    } catch(e) {
-        if(!isTest) {
-            statusBox.innerText = "❌ Error: " + e.message;
-            statusBox.style.color = "#ff4d4d";
-            statusBox.style.background = "#450a0a";
-        } else {
-            alert("Voice Error: " + e.message);
-        }
-    } finally {
-        if(!isTest) {
-            genBtn.disabled = false;
-            genBtn.innerHTML = '<span class="material-icons-round">multitrack_audio</span> Generate';
+    window.onload = () => { addSegment(); };
+
+    function checkEmpty() {
+        if (segmentsList.children.length === 0) emptyState.style.display = "block";
+        else emptyState.style.display = "none";
+    }
+
+    function addSegment() {
+        segmentCount++;
+        const id = segmentCount;
+        
+        const div = document.createElement('div');
+        div.className = 'segment-card';
+        div.id = `seg-${id}`;
+        
+        div.innerHTML = `
+            <div class="card-header">
+                <span class="card-title">
+                    <span class="material-icons-round" style="vertical-align:middle; font-size:1.1rem; color:#0ea5e9;">description</span> 
+                    Script Segment #${id}
+                </span>
+                <button class="btn-delete" onclick="removeSegment(${id})" title="Delete">
+                    <span class="material-icons-round">delete_outline</span>
+                </button>
+            </div>
+
+            <label class="inp-label">Select Voice Model</label>
+            <select id="voice-${id}">${voiceOptions}</select>
+
+            <div class="controls-row">
+                <div class="control-group">
+                    <div class="control-label"><span>Speed</span> <span id="lbl-spd-${id}">0%</span></div>
+                    <input type="range" id="rate-${id}" min="-50" max="50" value="0" oninput="updateLbl(${id})">
+                </div>
+                <div class="control-group">
+                    <div class="control-label"><span>Pitch</span> <span id="lbl-pit-${id}">0Hz</span></div>
+                    <input type="range" id="pitch-${id}" min="-20" max="20" value="0" oninput="updateLbl(${id})">
+                </div>
+            </div>
+
+            <textarea id="text-${id}" placeholder="Type Hindi text here...&#10;For News Style: Use | for full stops and ... for pauses."></textarea>
+
+            <div class="action-area">
+                <!-- 1. Generate Button (Primary) -->
+                <button class="btn-gen" id="btn-gen-${id}" onclick="generateAudio(${id})">
+                    <span class="material-icons-round">multitrack_audio</span> Generate Audio
+                </button>
+                
+                <div id="status-${id}" class="status-txt"></div>
+
+                <!-- 2. Test Button (Secondary - Below Generate as requested) -->
+                <button class="btn-test" id="btn-test-${id}" onclick="testVoice(${id})">
+                    <span class="material-icons-round">play_circle_filled</span> Test Voice Sample
+                </button>
+
+                <!-- 3. Output Area -->
+                <div class="audio-wrapper" id="audio-box-${id}">
+                    <audio id="player-${id}" controls controlsList="nodownload"></audio>
+                    <button class="btn-download" id="dl-${id}" onclick="downloadAudio(${id})">
+                        <span class="material-icons-round">file_download</span> Download MP3
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        segmentsList.appendChild(div);
+        setTimeout(() => { div.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+        checkEmpty();
+    }
+
+    function removeSegment(id) {
+        if(confirm("Delete this block?")) {
+            const el = document.getElementById(`seg-${id}`);
+            if(el) el.remove();
+            checkEmpty();
         }
     }
-}
 
-function stopAudio(){
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-}
+    function updateLbl(id) {
+        const rate = document.getElementById(`rate-${id}`).value;
+        const pitch = document.getElementById(`pitch-${id}`).value;
+        document.getElementById(`lbl-spd-${id}`).innerText = (rate > 0 ? "+" : "") + rate + "%";
+        document.getElementById(`lbl-pit-${id}`).innerText = (pitch > 0 ? "+" : "") + pitch + "Hz";
+    }
 
-function download(){
-    if(!audioBlob) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(audioBlob);
-    a.download = "voice-output.mp3";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
+    const audioBlobs = {};
+
+    // --- Test Voice Function ---
+    async function testVoice(id) {
+        const voice = document.getElementById(`voice-${id}`).value;
+        const btn = document.getElementById(`btn-test-${id}`);
+        const originalText = btn.innerHTML;
+        
+        let testText = "नमस्ते, यह एक वॉयस टेस्ट है।";
+        if(voice.includes("ur")) testText = "अस्सलाम वालेकुम, यह एक वॉयस चेक है।";
+        if(voice.includes("en")) testText = "Hello, checking the voice quality.";
+
+        // UI Loading
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-icons-round animate-spin">sync</span> Testing...';
+        btn.style.opacity = "0.7";
+
+        const baseUrl = globalApiUrl.value.replace(/\/$/, "");
+        
+        try {
+            const res = await fetch(baseUrl + "/tts", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ text: testText, voice: voice, rate: 0, pitch: 0 })
+            });
+            if(!res.ok) throw new Error("API Error");
+            const blob = await res.blob();
+            const audio = new Audio(URL.createObjectURL(blob));
+            audio.play();
+        } catch(e) {
+            alert("Test Failed: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.style.opacity = "1";
+        }
+    }
+
+    // --- Generate Full Audio ---
+    async function generateAudio(id) {
+        const text = document.getElementById(`text-${id}`).value.trim();
+        const voice = document.getElementById(`voice-${id}`).value;
+        const rate = document.getElementById(`rate-${id}`).value;
+        const pitch = document.getElementById(`pitch-${id}`).value;
+        
+        const btn = document.getElementById(`btn-gen-${id}`);
+        const status = document.getElementById(`status-${id}`);
+        const audioBox = document.getElementById(`audio-box-${id}`);
+        const player = document.getElementById(`player-${id}`);
+        const dlBtn = document.getElementById(`dl-${id}`);
+
+        if(!text) { alert("Please enter text first!"); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-icons-round animate-spin">sync</span> Processing...';
+        status.style.display = "block";
+        status.innerText = "Connecting to server...";
+        status.style.color = "#fbbf24";
+        audioBox.style.display = "none";
+
+        const baseUrl = globalApiUrl.value.replace(/\/$/, "");
+        
+        try {
+            const res = await fetch(baseUrl + "/tts", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ text, voice, rate, pitch })
+            });
+
+            if(!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Server error");
+            }
+
+            const blob = await res.blob();
+            audioBlobs[id] = blob;
+            
+            const url = URL.createObjectURL(blob);
+            player.src = url;
+            
+            status.innerText = "✅ Generated Successfully!";
+            status.style.color = "#4ade80";
+            
+            audioBox.style.display = "block";
+            dlBtn.style.display = "flex";
+            
+            player.play().catch(e => console.log("Auto-play blocked"));
+
+        } catch(e) {
+            status.innerText = "❌ Error: " + e.message;
+            status.style.color = "#ef4444";
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-icons-round">multitrack_audio</span> Generate Audio';
+        }
+    }
+
+    function downloadAudio(id) {
+        if(!audioBlobs[id]) return;
+        const voiceName = document.getElementById(`voice-${id}`).value;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(audioBlobs[id]);
+        a.download = `Audio_${id}_${voiceName}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 </script>
 
 </body>
